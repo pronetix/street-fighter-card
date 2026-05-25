@@ -229,18 +229,148 @@
         .char-name { font-size: 11px; }
         .char-info { font-size: 8px; line-height: 1.3; margin-top: 5px; }
 
-        /* Battle */
-        .battle-header { max-width: 100%; margin-bottom: 10px; flex-wrap: wrap; justify-content: center; gap: 10px; }
-        .fighter { width: 45%; }
-        .fighter-avatar { width: 70px; height: 70px; border-width: 3px; }
-        .fighter-name { font-size: 11px; margin-top: 5px; }
-        .hp-bar { height: 14px; border-width: 2px; margin-top: 3px; }
-        .hp-text { font-size: 9px; top: 1px; }
-        .status-effects { height: 10px; font-size: 8px; gap: 3px; margin-top: 3px; }
-        .center-stage { min-height: 40px; }
-        .vs-text { font-size: 18px; }
-        .combo-text { font-size: 14px; }
-        .battle-log { max-width: 100%; height: 70px; padding: 6px; font-size: 8px; margin-bottom: 10px; }
+        /* Battle — Mobile redesign */
+        #screen-battle { padding: 6px; justify-content: flex-start; overflow-y: auto; }
+        #screen-battle .battle-header {
+            max-width: 100%;
+            margin-bottom: 6px;
+            gap: 6px;
+            flex-wrap: nowrap;
+        }
+        #screen-battle .fighter {
+            width: auto;
+            flex: 1;
+            min-width: 0;
+        }
+        #screen-battle .fighter-avatar {
+            width: 55px;
+            height: 55px;
+            border-width: 2px;
+        }
+        #screen-battle .fighter-name {
+            font-size: 9px;
+            margin-top: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        #screen-battle .hp-bar {
+            height: 10px;
+            border-width: 1px;
+            margin-top: 2px;
+        }
+        #screen-battle .hp-text {
+            font-size: 7px;
+            top: 0;
+        }
+        #screen-battle .status-effects {
+            height: 8px;
+            font-size: 7px;
+            gap: 2px;
+            margin-top: 2px;
+        }
+        #screen-battle .deck-count,
+        #screen-battle .ex-bar-container,
+        #screen-battle .ex-text {
+            display: none;
+        }
+        #screen-battle .center-stage {
+            min-height: auto;
+            justify-content: flex-start;
+            padding-top: 10px;
+        }
+        #screen-battle .vs-text {
+            font-size: 14px;
+        }
+        #screen-battle .combo-text {
+            font-size: 12px;
+        }
+        #screen-battle #round-info {
+            font-size: 9px !important;
+            margin-top: 4px !important;
+        }
+        #screen-battle .battle-log {
+            max-width: 100%;
+            height: 45px;
+            padding: 4px 6px;
+            font-size: 7px;
+            line-height: 1.4;
+            margin-bottom: 6px;
+            border-width: 1px;
+        }
+        #screen-battle .player-controls {
+            max-width: 100%;
+            gap: 4px;
+        }
+        #screen-battle .energy-container {
+            font-size: 10px;
+            gap: 4px;
+        }
+        #screen-battle .energy-orb {
+            width: 8px;
+            height: 8px;
+        }
+        #screen-battle .hand {
+            gap: 4px;
+            padding: 4px 0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        #screen-battle .hand::-webkit-scrollbar {
+            display: none;
+        }
+        #screen-battle .card {
+            width: 65px;
+            height: 95px;
+            border-width: 2px;
+            border-radius: 5px;
+            padding: 4px;
+            flex-shrink: 0;
+        }
+        #screen-battle .card:hover:not(.disabled) {
+            transform: translateY(-4px);
+        }
+        #screen-battle .card.gold:hover:not(.disabled) {
+            transform: translateY(-4px) scale(1.02);
+        }
+        #screen-battle .card-cost {
+            width: 18px;
+            height: 18px;
+            font-size: 8px;
+            top: -5px;
+            left: -5px;
+            border-width: 1px;
+        }
+        #screen-battle .card-title {
+            font-size: 7px;
+            margin-bottom: 2px;
+            height: 16px;
+        }
+        #screen-battle .card-pic {
+            margin-bottom: 2px;
+            border-width: 1px;
+        }
+        #screen-battle .card-desc {
+            font-size: 6px;
+            height: 20px;
+            line-height: 1.1;
+        }
+        #screen-battle .gold-label {
+            font-size: 10px;
+            top: -3px;
+            right: -3px;
+        }
+        #screen-battle .btn-row {
+            gap: 6px;
+        }
+        #screen-battle .btn-row button {
+            padding: 8px 12px;
+            font-size: 10px;
+            margin: 0;
+            flex: 1;
+        }
 
         /* Hand & Cards */
         .player-controls { max-width: 100%; gap: 6px; }
