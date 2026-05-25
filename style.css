@@ -270,10 +270,22 @@
             gap: 2px;
             margin-top: 2px;
         }
-        #screen-battle .deck-count,
-        #screen-battle .ex-bar-container,
-        #screen-battle .ex-text {
+        #screen-battle .deck-count {
             display: none;
+        }
+        #screen-battle .ex-bar-container {
+            height: 6px;
+            border-width: 1px;
+            margin-top: 2px;
+            border-radius: 3px;
+        }
+        #screen-battle .ex-bar-fill {
+            border-radius: 2px;
+        }
+        #screen-battle .ex-text {
+            font-size: 7px;
+            margin-top: 1px;
+            color: #ffbb00;
         }
         #screen-battle .center-stage {
             min-height: auto;
