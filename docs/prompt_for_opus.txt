@@ -1,0 +1,80 @@
+You are a senior game developer and architect analyzing a browser-based Street Fighter card battler game.
+
+## Project Context
+- **Path:** `/home/pronkost/projects/street-fighter-card/`
+- **Files to analyze:**
+  - `game.js` — 1754 lines, ~89KB (monolithic, contains all game logic)
+  - `index.html` — UI structure
+  - `style.css` — styling
+- **Game features:** Career mode (8 levels + endless), Arcade/Sparring, Local hotseat multiplayer, Card combat with energy system, Character passives, EX meter for supers, Events between battles, Shop/rewards, Achievements
+
+## Critical Focus Areas
+Pay special attention to these known code patterns:
+1. `generateStartingDeck(charId)` — currently returns a new array, but prior battle cards (hand/discard) get pushed back into deck at `startBattle()` lines 757-758. Verify if deck bloats between battles.
+2. `startBattle()`, `startArcadeBattle()`, `startMultiplayer()` — all apply Honda's passive (`maxHp+=15; hp+=15`). Check if this stacks across multiple battles without reset.
+3. `localStorage.setItem('sfStats', JSON.stringify(Stats))` at line 316 — no try/catch wrapper. Check if corrupted save data crashes the game.
+4. `Math.random()` used globally for shuffling, damage variance, AI decisions — easily manipulated in browser console.
+5. FX system at line 42: `requestAnimationFrame(() => this.loop())` starts on init and never stops, even in menus.
+6. `renderAvatar()` line 103-106 — `avatar.startsWith('data:image')` and inserts raw src without sanitization.
+7. `drawAvatar()` builds SVG via string concatenation with raw color values.
+8. `upgradeToGold()` and card cloning use `{...CardDB.find(...), uid: Math.random()}` — shallow copies sharing references to nested objects.
+
+## Required Analysis Sections
+
+### 1. 🛑 CRITICAL BUGS (Immediate fix required)
+- Logic errors causing gameplay breakage
+- State corruption between battles/levels
+- Resource leaks or infinite loops
+- For each: exact line numbers, description, reproduction steps, severity (Critical/High/Medium/Low), suggested fix with code
+
+### 2. 🔧 CODE ARCHITECTURE
+- Monolith 89KB analysis — why it's problematic
+- State management (`Game` object structure)
+- Suggested module breakdown (ES modules)
+- Card data immutability issues
+- Function complexity / cyclomatic complexity concerns
+
+### 3. ⚖️ GAME BALANCE & MECHANICS
+- Character passive balance (especially Honda, Akuma, Zangief)
+- Difficulty scaling (DIFFICULTY table)
+- Card economy and power curve
+- Event system risk/reward analysis
+- Shop pricing vs difficulty scaling
+
+### 4. 🎮 UX/UI ISSUES
+- Input handling (double-click protection, card play feedback)
+- HP bar lack of color states (only green)
+- Battle log infinite growth (DOM bloat)
+- Mobile/touch considerations
+- Visual feedback for combos, buffs, debuffs
+
+### 5. 🚀 PERFORMANCE
+- Canvas particles: always-running rAF even when empty
+- DOM manipulation efficiency (`innerHTML = ''` rebuilds)
+- Memory leaks in event handlers / closures
+- `renderStatus()` rebuilding HTML every tick
+
+### 6. 🔒 SECURITY
+- XSS via `renderAvatar()` raw HTML insertion
+- Client-side randomness manipulation (cheating)
+- localStorage validation absence
+- `evalEnemyCard()` scoring exploitability
+
+### 7. 💡 ENHANCEMENTS & FEATURE IDEAS
+- Short-term (easy wins, high impact)
+- Mid-term (moderate effort)
+- Long-term (major features: deck builder, PvP online, etc.)
+
+## Output Format Requirements
+- **Language:** RUSSIAN (русский)
+- **Format:** Markdown with code blocks
+- **Priority table:** Impact × Effort matrix
+- **Code fixes:** Must include exact line numbers from game.js, before/after code
+- **Length:** 2500-5000 words
+- **Tone:** Professional, constructive, specific
+
+## FINAL INSTRUCTION
+Write the complete analysis directly to the file:
+`/home/pronkost/projects/street-fighter-card/docs/improvements_opus47_FINAL.md`
+If the file already exists, overwrite it completely.
+After writing the file, report: "[OK] File written successfully" and the exact byte count of the written file.

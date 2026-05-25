@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Street Fighter Card Game</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="data/content.js"></script>
+    <script src="systems/audio.js"></script>
+    <script src="ui/fx.js"></script>
+    <script src="core/state.js"></script>
+    <script src="core/engine.js"></script>
+</head>
+<body>
+
+<canvas id="fx-canvas"></canvas>
+
+<!-- MENU SCREEN -->
+<div id="screen-menu" class="screen active">
+    <img src="images/banner_34.jpeg" style="width:300px;height:200px;object-fit:cover;border-radius:8px;margin-bottom:20px;border:4px solid var(--border);" alt="Street Fighter Card Game">
+    <h1>Street Fighter<br>Card Game</h1>
+    <div class="btn-row">
+        <button onclick="nav('difficulty')">Начать Карьеру</button>
+        <button onclick="enterArcadeMode()">🏆 Спаринг</button>
+        <button onclick="nav('multi-select')">⚔️ Мультиплеер</button>
+        <button onclick="nav('stats')">Статистика</button>
+    </div>
+</div>
+
+
+<!-- DIFFICULTY SCREEN -->
+<div id="screen-difficulty" class="screen">
+    <h2 style="color:#ffbb00;">СЛОЖНОСТЬ</h2>
+    <div style="display:flex; flex-direction:column; gap:15px; max-width:500px; margin:20px auto;">
+        <button onclick="setDifficulty(0)" style="font-size:16px; padding:15px; background:#002200; border-color:#0f0;">
+            👶 НОВИЧОК
+            <br><small style="color:#888;">Стандартная сложность</small>
+        </button>
+        <button onclick="setDifficulty(1)" style="font-size:16px; padding:15px; background:#222200; border-color:#ffbb00;">
+            💪 ВОИН
+            <br><small style="color:#888;">Враги +30% HP и +50% ATK</small>
+        </button>
+        <button onclick="setDifficulty(2)" style="font-size:16px; padding:15px; background:#220000; border-color:#ff4444;">
+            💀 МАСТЕР
+            <br><small style="color:#888;">Враги +60% HP, ATK x2, улучшенная колода</small>
+        </button>
+    </div>
+    <button onclick="nav('menu')" style="margin-top:20px;">Назад</button>
+</div>
+<!-- SPARRING MENU SCREEN -->
+<div id="screen-arcade-menu" class="screen">
+    <h2 style="color:#ffaa00;">🏆 СПАРИНГ</h2>
+    <p id="arcade-step-hint" style="font-size:13px; color:#ffbb00; margin-bottom:15px; text-align:center;">Шаг 1: выберите своего бойца</p>
+    
+    <div style="display:flex; flex-direction:column; gap:20px; width:100%; max-width:700px; margin:0 auto;">
+        <div id="arcade-player-section">
+            <h3 style="color:#0f0; font-size:12px; margin-bottom:10px;">👤 ВАШ БОЕЦ</h3>
+            <div class="roster roster-scroll" id="arcade-player-roster" style="grid-template-columns:repeat(4,1fr);"></div>
+            <div id="arcade-player-selected" style="text-align:center; color:#ffbb00; font-size:12px; margin-top:5px;"></div>
+        </div>
+        
+        <div id="arcade-enemy-section" style="display:none;">
+            <h3 style="color:#ff4444; font-size:12px; margin-bottom:10px;">💀 ПРОТИВНИК</h3>
+            <div class="roster roster-scroll" id="arcade-enemy-roster" style="grid-template-columns:repeat(4,1fr);"></div>
+            <div id="arcade-enemy-selected" style="text-align:center; color:#ffbb00; font-size:12px; margin-top:5px;"></div>
+        </div>
+    </div>
+    
+    <div class="btn-row" style="margin-top:20px;">
+        <button onclick="startArcadeBattle()">В бой!</button>
+        <button onclick="nav('menu')">Назад</button>
+    </div>
+</div>
+
+<!-- SELECT SCREEN -->
+<div id="screen-select" class="screen">
+    <h2>Выберите Бойца</h2>
+    <div class="roster roster-scroll" id="roster-container"></div>
+    <div class="btn-row">
+        <button onclick="nav('menu')">Назад</button>
+    </div>
+</div>
+
+<!-- NEXT ENEMY SCREEN -->
+<div id="screen-next-enemy" class="screen">
+    <h2>Следующий противник</h2>
+    <div id="next-enemy-info" class="stat-box" style="text-align: center; margin-bottom: 20px;"></div>
+    <div class="btn-row">
+        <button onclick="startBattle()">В бой!</button>
+    </div>
+</div>
+
+<!-- BATTLE SCREEN -->
+<div id="screen-battle" class="screen">
+    <div class="battle-header">
+        <div class="fighter" id="p1">
+            <div class="fighter-avatar" id="p1-avatar"></div>
+            <div class="fighter-name" id="p1-name">Игрок</div>
+            <div class="hp-bar"><div class="hp-fill" id="p1-hp-fill"></div><div class="hp-text" id="p1-hp-text">100/100</div></div>
+            <div class="status-effects" id="p1-status"></div>
+            <div class="deck-count" id="p1-deck">Колода: 20</div>
+            <div class="ex-bar-container"><div class="ex-bar-fill ex-bar-green" id="p1-ex-fill" style="width:0%"></div></div>
+            <div class="ex-text" id="p1-ex-text">EX: 0%</div>
+        </div>
+        <div class="center-stage">
+            <div class="vs-text">VS</div>
+            <div class="combo-text" id="combo-text">КОМБО!</div>
+            <div id="round-info" style="margin-top:20px; font-size:12px; color:#888;">Бой 1/8</div>
+        </div>
+        <div class="fighter" id="p2">
+            <div class="fighter-avatar" id="p2-avatar"></div>
+            <div class="fighter-name" id="p2-name">Враг</div>
+            <div class="hp-bar"><div class="hp-fill" id="p2-hp-fill"></div><div class="hp-text" id="p2-hp-text">100/100</div></div>
+            <div class="status-effects" id="p2-status"></div>
+            <div class="deck-count" id="p2-deck">Колода: 20</div>
+            <div class="ex-bar-container"><div class="ex-bar-fill ex-bar-green" id="p2-ex-fill" style="width:0%"></div></div>
+            <div class="ex-text" id="p2-ex-text">EX: 0%</div>
+        </div>
+    </div>
+    <div class="battle-log" id="battle-log"></div>
+    <div class="player-controls">
+        <div class="energy-container" id="energy-container">Энергия: <span></span></div>
+        <div class="hand" id="player-hand"></div>
+        <div class="btn-row">
+            <button id="end-turn-btn" onclick="endPlayerTurn()" style="background:#500; border-color:#f00;">Конец хода</button>
+            <button onclick="openPauseMenu()">Меню</button>
+        </div>
+    </div>
+</div>
+
+<!-- PAUSE MODAL -->
+<div id="pause-modal" class="modal-overlay">
+    <div class="modal-menu">
+        <h2>⏸️ ПАУЗА</h2>
+        <div class="btn-row" style="flex-direction: column; gap: 12px;">
+            <button onclick="closePauseMenu()">▶️ Продолжить</button>
+            <button onclick="quitToMenu()">🏠 Выйти в меню</button>
+            <button onclick="toggleMute()" id="pause-mute-btn">🔊 Звук: ВКЛ</button>
+        </div>
+    </div>
+</div>
+
+<!-- REWARDS SCREEN -->
+<div id="screen-rewards" class="screen">
+    <div class="reward-header">
+        <img src="images/banner_35.jpeg" style="width:150px;height:150px;border-radius:8px;margin-bottom:10px;" alt="">
+        <h2 style="color:#ffd700; text-shadow: 2px 2px #000;">ПОБЕДА!</h2>
+        <p id="reward-subtitle">Выберите награду:</p>
+        <div class="gold-display" id="gold-display">Золото: 0</div>
+    </div>
+    <div class="reward-cards" id="reward-container"></div>
+    <div class="shop-container" id="shop-container"></div>
+    <div class="shop-btn-row">
+        <button id="skip-reward-btn" onclick="skipReward()">Пропустить награду (+5 золота)</button>
+        <button id="next-battle-btn" onclick="prepareNextBattle()">Следующий бой →</button>
+    </div>
+</div>
+
+<!-- EVENTS SCREEN -->
+<div id="screen-events" class="screen">
+    <div class="event-header">
+        <h2 style="color:#ffaa00; text-shadow: 2px 2px #000;">⚡ СОБЫТИЕ</h2>
+        <p id="event-desc" style="font-size:12px; color:#ccc; max-width:500px; text-align:center; line-height:1.6;"></p>
+    </div>
+    <div class="event-choices" id="event-choices"></div>
+    <button onclick="finishEvent()" id="event-continue-btn" style="display:none; margin-top:20px;">Продолжить →</button>
+</div>
+
+<!-- MULTIPLAYER SELECT SCREEN -->
+<div id="screen-multi-select" class="screen">
+    <h2 style="color:#ff44ff;">⚔️ МУЛЬТИПЛЕЕР</h2>
+    <p style="font-size:11px; color:#888; margin-bottom:20px; text-align:center;">Выберите бойца для Игрока 1</p>
+    <div class="roster roster-scroll" id="multi-roster-container"></div>
+    <div id="multi-p1-selected" style="text-align:center; color:#0ff; font-size:12px; margin:10px 0;"></div>
+    
+    <hr style="border-color:#555; width:80%; margin:15px 0;">
+    
+    <p style="font-size:11px; color:#888; margin-bottom:10px; text-align:center;">Выберите бойца для Игрока 2</p>
+    <div class="roster roster-scroll" id="multi-roster-container-p2"></div>
+    <div id="multi-p2-selected" style="text-align:center; color:#f0f; font-size:12px; margin:10px 0;"></div>
+    
+    <div class="btn-row" style="margin-top:15px;">
+        <button onclick="startMultiplayer()" id="multi-start-btn">⚔️ В бой!</button>
+        <button onclick="nav('menu')">Назад</button>
+    </div>
+</div>
+
+<!-- PASS TURN SCREEN (Multiplayer only) -->
+<div id="screen-pass-turn" class="screen">
+    <h2 style="color:#ff44ff;">⚔️ ПЕРЕДАЧА ХОДА</h2>
+    <p id="pass-turn-msg" style="font-size:14px; margin:20px 0; text-align:center;"></p>
+    <button onclick="resumeMultiTurn()" style="font-size:18px; padding:20px 40px; background:#440044; border-color:#ff44ff;">Готов →</button>
+</div>
+
+<!-- GAME OVER SCREEN -->
+<div id="screen-gameover" class="screen">
+    <h1 id="go-title">Конец Игры</h1>
+    <p id="go-desc" style="font-size:14px; margin-bottom:30px; line-height:2; text-align:center;"></p>
+    <button onclick="nav('menu')">В Главное Меню</button>
+</div>
+
+<!-- STATS SCREEN -->
+<div id="screen-stats" class="screen">
+    <h2>Статистика и Достижения</h2>
+    <div class="stat-box" id="stats-container"></div>
+    <button onclick="nav('menu')" style="margin-top:20px;">Назад</button>
+</div>
+
+
+</body>
+</html>

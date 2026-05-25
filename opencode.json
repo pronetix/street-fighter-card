@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "Tokenator/claude-opus-4-7",
+  "small_model": "Tokenator/claude-haiku-4-5",
+  "provider": {
+    "Tokenator": {
+      "name": "Tokenator",
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "https://api.tokenator.top/v1",
+        "apiKey": "sk-fp-27f53bc3-0a0f-4315-89ef-85590666718c"
+      }
+    }
+  }
+}

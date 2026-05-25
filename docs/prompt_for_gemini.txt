@@ -1,0 +1,68 @@
+Ты — senior game developer и software architect. Проанализируй JavaScript-код browser-based карточного файтера «Street Fighter Card Game» и напиши подробный технический отчёт на русском языке.
+
+## Контекст проекта
+- **Файлы:** `game.js` (1754 строки, ~89KB — вся логика в одном файле), `index.html`, `style.css`
+- **Фичи:** Карьера (8 уровней + endless), Спаринг (Arcade), Hotseat мультиплеер, колоды из карт с энерго-системой, пассивные способности персонажей, EX-шкала для супер-ударов, события между боями, магазин, ачивки
+- **Код:** Монолитный game.js, глобальный mutable-объект `Game`, `Math.random()` везде, `localStorage` без валидации
+
+## Что уже известно (проверь эти паттерны и подтверди/опровергни)
+
+1. **`game.js:773-775`** — пассивка Honda (`maxHp+=15; hp+=15`) применяется в `startBattle()` каждый бой карьеры. Подтверди, что это стакается, и предложи фикс.
+2. **`game.js:266, 316, 434`** — `JSON.parse(localStorage.getItem(...))` без try/catch. Битые данные = белый экран. Предложи защиту.
+3. **`game.js:1118-1130`** — в `dealDamage()` вычисляется `dmgAfterFlat = Math.max(0, amount - flatBlock)`, но переменная не используется дальше. Проверь: пассивная защита персонажей (`def`) сейчас ничего не уменьшает?
+4. **`game.js:884-920`** — `playCard()` не проверяет `reqEx` для super-карт. Через консоль можно сыграть super без EX. Нужен guard.
+5. **`game.js:175, 906`** — `second_wind` помечена `once`, при розыгрыше не кладётся в discard. Карта исчезает навсегда. Должна ли она возвращаться в колоду после боя?
+6. **`game.js:197-219, 757-758`** — `generateStartingDeck()` возвращает новый массив при каждом вызове, но в карьере вызывается только в `startCareer()`. Перед боем `startBattle()` возвращает карты из руки/сброса в колоду. Это нормальная shuffle-логика или deck bloating?
+7. **`game.js:42, 56-68`** — canvas FX частицы: `requestAnimationFrame(loop)` стартует при инициализации и никогда не останавливается, даже в меню. Предложи оптимизацию.
+8. **`game.js:103-106`** — `renderAvatar()` вставляет raw HTML без экранирования. Потенциальный XSS.
+9. **`game.js:593-597`** — таблица сложности одновременно бьёт по HP/ATK врагов, золоту игрока и ценам в магазине. Проверь баланс на «Мастере» (HP×1.6, ATK×2, gold×0.4, price×1.6).
+10. **`game.js:962-965`** — Akuma пассив: урон ×1.5, но в описании (`game.js:153`) «Каждый 3-й бой +1 к атаке» — этой механики в коде нет. Ошибка описания или недостающий код?
+
+## Требуемые разделы отчёта
+
+### 1. 🛑 CRITICAL BUGS
+- Логические ошибки, ломающие геймплей состояние
+- Для каждого: строки, описание, severity, воспроизведение, фикс с кодом
+
+### 2. ⚖️ GAME BALANCE
+- Balance персонажей после фикса Honda/def
+- Экономика золота, цен в магазине, наград
+- Сложность и scaling врагов
+- События: risk/reward анализ
+
+### 3. 🔧 CODE ARCHITECTURE
+- Проблемы монолита 89KB
+- State management (`Game` singleton)
+- Card immutability (`{...card, uid: Math.random()}` shallow copy)
+- Предложи ES module breakdown
+
+### 4. 🎮 UX / UI
+- Double-click / input lock
+- HP bar (нет цветовых состояний)
+- Battle log бесконечный рост
+- Mobile/touch
+
+### 5. 🚀 PERFORMANCE
+- Idle rAF в canvas
+- DOM rebuild в `updateUI()`
+- `renderStatus()` HTML string каждый tick
+
+### 6. 🔒 SECURITY
+- XSS в `renderAvatar()` / `drawAvatar()`
+- Client-side `Math.random()` manipulation
+- `localStorage` отсутствие валидации
+
+### 7. 💡 ENHANCEMENTS
+- Short-term (лёгкие, high impact)
+- Mid-term (средние)
+- Long-term (deck builder, online PvP, seeded daily run)
+
+### 8. 📋 Priority Table
+Impact × Effort матрица. P0 — fix immediately, P1 — this week, P2 — next sprint.
+
+## Output requirements
+- **Язык:** русский
+- **Формат:** Markdown с code blocks
+- **Код:** exact line numbers из game.js, before/after
+- **Длина:** 2000–4000 слов
+- **Тон:** профессиональный, конкретный, конструктивный
