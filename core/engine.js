@@ -187,13 +187,13 @@ function startMultiplayer() {
     
     // Passives
     if(Game.player.id === 'honda' && !Game.player.hondaHpApplied) { 
-        Game.player.maxHp+=15; 
-        Game.player.hp+=15; 
+        Game.player.maxHp+=20; 
+        Game.player.hp+=20; 
         Game.player.hondaHpApplied = true;
     }
     if(Game.p2.id === 'honda' && !Game.p2.hondaHpApplied) { 
-        Game.p2.maxHp+=15; 
-        Game.p2.hp+=15; 
+        Game.p2.maxHp+=20; 
+        Game.p2.hp+=20; 
         Game.p2.hondaHpApplied = true;
     }
     
@@ -379,13 +379,13 @@ function startArcadeBattle() {
     
     // Passives start of battle
     if(Game.player.id === 'honda' && !Game.player.hondaHpApplied) { 
-        Game.player.maxHp += 15; 
-        Game.player.hp += 15; 
+        Game.player.maxHp += 20; 
+        Game.player.hp += 20; 
         Game.player.hondaHpApplied = true;
     }
     if(Game.enemy.id === 'honda' && !Game.enemy.hondaHpApplied) { 
-        Game.enemy.maxHp += 15; 
-        Game.enemy.hp += 15; 
+        Game.enemy.maxHp += 20; 
+        Game.enemy.hp += 20; 
         Game.enemy.hondaHpApplied = true;
     }
     
@@ -470,13 +470,13 @@ function startBattle() {
     
     // Passives - Start of Battle (Honda: one-time +15 max HP)
     if(Game.player.id === 'honda' && !Game.player.hondaHpApplied) { 
-        Game.player.maxHp += 15; 
-        Game.player.hp += 15; 
+        Game.player.maxHp += 20; 
+        Game.player.hp += 20; 
         Game.player.hondaHpApplied = true; 
     }
     if(Game.enemy.id === 'honda' && !Game.enemy.hondaHpApplied) { 
-        Game.enemy.maxHp += 15; 
-        Game.enemy.hp += 15; 
+        Game.enemy.maxHp += 20; 
+        Game.enemy.hp += 20; 
         Game.enemy.hondaHpApplied = true; 
     }
 
@@ -543,7 +543,7 @@ function startTurn() {
     Game.pBuffs.nextTurnEnergy = 0;
     Game.pEnergy = energy;
     
-    if(Game.player.id === 'chun' || Game.player.id === 'dhalsim') Game.pBuffs.freeCard = true;
+    if(Game.player.id === 'chun') Game.pBuffs.freeCard = true;
     
     drawCards(Game.pDeck, Game.pHand, Game.pDiscard, 5 - Game.pHand.length);
     drawCards(Game.eDeck, Game.eHand, Game.eDiscard, 5 - Game.eHand.length);
@@ -662,24 +662,26 @@ function checkCombo(side) {
 function applyCharacterPassives(attacker, aBuffs, rawDmg, unblockable) {
     if(attacker.id === 'chun' && !aBuffs.firstStrikeDone) {
         aBuffs.firstStrikeDone = true;
-        logMsg(`Чунь-Ли игнорирует блок первым ударом!`, '#0ff');
-        return [rawDmg, true];
+        if(Math.random() < 0.5) {
+            logMsg(`Чунь-Ли игнорирует блок первым ударом!`, '#0ff');
+            return [rawDmg, true];
+        }
     }
-    if(attacker.id === 'zangief' && attacker.hp < attacker.maxHp * 0.25) {
-        logMsg(`Зангиев в ярости! (Урон x2 + Игнор блока)`, '#f00');
-        return [rawDmg * 2, true];
+    if(attacker.id === 'zangief' && attacker.hp < attacker.maxHp * 0.30) {
+        logMsg(`Зангиев в ярости! (Урон x1.8 + Игнор блока)`, '#f00');
+        return [rawDmg * 1.8, true];
     }
-    if(attacker.id === 'ken' && Math.random() < 0.3) {
+    if(attacker.id === 'ken' && Math.random() < 0.35) {
         logMsg(`КРИТ от Кена!`, '#ffbb00');
-        return [rawDmg * 2.5, unblockable];
+        return [rawDmg * 2, unblockable];
     }
     if(attacker.id === 'bison' && attacker.hp < attacker.maxHp * 0.4) {
         logMsg(`Байсон использует Психо Силу!`, '#f0f');
         return [rawDmg * 1.5, true];
     }
     if(attacker.id === 'akuma') {
-        logMsg(`Акума: Демоническая сила! (Урон x1.5)`, '#f00');
-        return [rawDmg * 1.5, unblockable];
+        logMsg(`Акума: Демоническая сила! (Урон x1.4)`, '#f00');
+        return [rawDmg * 1.4, unblockable];
     }
     return [rawDmg, unblockable];
 }
@@ -725,8 +727,8 @@ function executeCard(card, attacker, defender, aBuffs, dBuffs, targetSide, isExt
         if(attacker.id === 'honda') {
             attacker.blockCount = (attacker.blockCount || 0) + 1;
             if(attacker.blockCount % 3 === 0) {
-                attacker.hp = Math.min(attacker.maxHp, attacker.hp + 5);
-                logMsg(`Хонда лечит 5 HP за блокирование!`, '#0f0');
+                attacker.hp = Math.min(attacker.maxHp, attacker.hp + 8);
+                logMsg(`Хонда лечит 8 HP за блокирование!`, '#0f0');
             }
         }
         return;
@@ -789,9 +791,9 @@ function executeCard(card, attacker, defender, aBuffs, dBuffs, targetSide, isExt
                 }
             }
             
-            if(attacker.id === 'blanka' && Math.random() < 0.35) {
-                logMsg(`Бланка: Удар молнией! (+8 урона и оглушение)`, '#ffff00');
-                dealDamage(defender, 8, dBuffs, targetSide, true);
+            if(attacker.id === 'blanka' && Math.random() < 0.30) {
+                logMsg(`Бланка: Удар молнией! (+10 урона и оглушение)`, '#ffff00');
+                dealDamage(defender, 10, dBuffs, targetSide, true);
                 dBuffs.stun = 1;
             }
             
@@ -802,8 +804,8 @@ function executeCard(card, attacker, defender, aBuffs, dBuffs, targetSide, isExt
             }
             
             if(defender.id === 'guile' && dBuffs.blockCharges > 0) {
-                logMsg(`Гайл возвращает 3 урона за блок!`, '#ffaa00');
-                dealDamage(attacker, 3, aBuffs, targetSide==='enemy'?'player':'enemy', true);
+                logMsg(`Гайл возвращает 4 урона за блок!`, '#ffaa00');
+                dealDamage(attacker, 4, aBuffs, targetSide==='enemy'?'player':'enemy', true);
             }
             
             if(dBuffs.iceBlock) {
@@ -958,7 +960,7 @@ function enemyTurn() {
     energy += Game.eBuffs.nextTurnEnergy;
     Game.eBuffs.nextTurnEnergy = 0;
     
-    if(Game.enemy.id === 'chun' || Game.enemy.id === 'dhalsim') Game.eBuffs.freeCard = true;
+    if(Game.enemy.id === 'chun') Game.eBuffs.freeCard = true;
     Game.eEnergy = energy;
 
     let playInterval = setInterval(() => {
