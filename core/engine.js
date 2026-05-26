@@ -26,6 +26,18 @@ function nav(screenId) {
 function renderRoster() {
     const cont = document.getElementById('roster-container');
     cont.innerHTML = '';
+
+    // Header with permanent gold balance
+    let header = document.getElementById('select-gold-header');
+    if(!header) {
+        header = document.createElement('div');
+        header.id = 'select-gold-header';
+        header.className = 'gold-display';
+        header.style.marginBottom = '10px';
+        cont.parentNode.insertBefore(header, cont);
+    }
+    header.innerText = '💰 Кошелёк: ' + (Stats.gold || 0);
+
     Characters.forEach(c => {
         let card = document.createElement('div');
         let isUnlocked = Stats.unlockedChars.includes(c.id);
@@ -40,10 +52,11 @@ function renderRoster() {
             card.onclick = () => startCareer(c.id);
         } else {
             let req = UNLOCK_CONDITIONS[c.id];
+            let canAfford = (Stats.gold || 0) >= req.cost;
             card.innerHTML = `
                 <div class="char-name" style="color:#666">???</div>
                 <div class="char-svg" style="filter:grayscale(100%);opacity:0.3">${renderAvatar(c.svg)}</div>
-                <div class="char-info" style="color:#888;font-size:9px">${req.desc}<br><br>Цена: ${req.cost}💰</div>
+                <div class="char-info" style="color:#888;font-size:9px">${req.desc}<br><br>Цена: <span style="color:${canAfford ? '#ffd700' : '#f44'}">${req.cost}💰</span></div>
             `;
             card.onclick = () => unlockChar(c.id);
         }
@@ -54,11 +67,13 @@ function renderRoster() {
 function renderStats() {
     let c = document.getElementById('stats-container');
     c.innerHTML = `
+        💰 Кошелёк: <span style="color:#ffd700">${Stats.gold || 0}</span><br>
         Победы: <span style="color:#0f0">${Stats.wins}</span><br>
         Поражения: <span style="color:#f00">${Stats.losses}</span><br>
         Любимый боец: <span style="color:#ffbb00">${Stats.favChar || 'Нет'}</span><br>
         Лучшая серия: ${Stats.bestRun}/8<br>
         Рекорд бесконечного: <span style="color:#ff00ff">${Stats.recordEndless || 0}</span><br>
+        Открыто бойцов: ${Stats.unlockedChars.length}/${Characters.length}<br>
         <br>
         <b>Достижения:</b><br>
         [${Stats.achZangief3 ? 'X' : ' '}] Победить Зангиева за 3 хода<br>
@@ -1087,6 +1102,11 @@ function winBattle() {
     if(Game.turnCounter <= 5) goldReward += getEffectiveGold(10);
     if(Game.noBlockUsed) goldReward += getEffectiveGold(15);
     Game.gold += goldReward;
+    // 30% от заработанного золота идёт в постоянный кошелёк
+    let walletGain = Math.ceil(goldReward * 0.3);
+    Stats.gold = (Stats.gold || 0) + walletGain;
+    saveStats();
+    logMsg(`+${walletGain} в кошелёк (${Stats.gold})`, '#ffd700');
     
     if(Game.level >= Game.maxLevel && !Game.endlessMode) {
         if(!Stats.achAllChars.includes(Game.player.id)) {
@@ -1116,6 +1136,12 @@ function loseGame() {
     if(Game.endlessMode && Game.level > Stats.recordEndless) {
         Stats.recordEndless = Game.level;
         logMsg(`🎖️ Новый рекорд бесконечного режима: уровень ${Game.level}!`, '#ffd700');
+    }
+    // Половина оставшегося забегового золота переходит в постоянный кошелёк
+    if(Game.gold > 0 && !Game.arcadeMode && !Game.multiplayer) {
+        let walletGain = Math.floor(Game.gold * 0.5);
+        Stats.gold = (Stats.gold || 0) + walletGain;
+        logMsg(`💰 +${walletGain} золота в кошелёк (${Stats.gold})`, '#ffd700');
     }
     saveStats();
     nav('gameover');
@@ -1242,6 +1268,34 @@ function finishEvent() {
     showRewards();
 }
 
+function renderPlayerStatsPanel() {
+    const el = document.getElementById('player-stats-panel');
+    if(!el || !Game.player) return;
+    let p = Game.player;
+    let atk = (p.atk || 0) + (Game.dmgBonus || 0);
+    let def = p.def || 0;
+    let energy = Game.baseEnergy + (Game.energyBonus || 0);
+    if(p.id === 'ryu') energy += 1;
+    let goldCards = (Game.pDeck || []).filter(c => c.gold).length
+        + (Game.pHand || []).filter(c => c.gold).length
+        + (Game.pDiscard || []).filter(c => c.gold).length;
+    let totalCards = (Game.pDeck || []).length + (Game.pHand || []).length + (Game.pDiscard || []).length + (Game.pExhaust || []).length;
+    el.innerHTML = `
+        <div class="psp-avatar">${renderAvatar(p.svg)}</div>
+        <div class="psp-info">
+            <div class="psp-name">${p.name}</div>
+            <div class="psp-stats">
+                <span class="s-hp">❤️ ${p.hp}/${p.maxHp}</span>
+                <span class="s-atk">⚔️ ${atk}${Game.dmgBonus ? ' (+' + Game.dmgBonus + ')' : ''}</span>
+                <span class="s-def">🛡️ ${def}</span>
+                <span class="s-eng">⚡ ${energy}${Game.energyBonus ? ' (+' + Game.energyBonus + ')' : ''}</span>
+                <span class="s-deck">🃏 ${totalCards}${goldCards ? ' (⭐' + goldCards + ')' : ''}</span>
+            </div>
+            <div class="psp-passive">${p.passiveDesc || ''}</div>
+        </div>
+    `;
+}
+
 // --- REWARDS ---
 function showRewards() {
     nav('rewards');
@@ -1251,6 +1305,9 @@ function showRewards() {
     document.getElementById('shop-container').classList.remove('active');
     document.getElementById('skip-reward-btn').style.display = 'inline-block';
     document.getElementById('next-battle-btn').style.display = 'none';
+    let switchBtn = document.getElementById('switch-char-btn');
+    if(switchBtn) switchBtn.style.display = 'none';
+    renderPlayerStatsPanel();
     
     const rc = document.getElementById('reward-container');
     rc.innerHTML = '';
@@ -1296,6 +1353,9 @@ function showShopAfterReward() {
     document.getElementById('reward-subtitle').innerText = 'Магазин — купите улучшения:';
     document.getElementById('skip-reward-btn').style.display = 'none';
     document.getElementById('next-battle-btn').style.display = 'inline-block';
+    let switchBtn = document.getElementById('switch-char-btn');
+    if(switchBtn && !Game.arcadeMode && !Game.multiplayer) switchBtn.style.display = 'inline-block';
+    renderPlayerStatsPanel();
     renderShop();
 }
 
@@ -1332,6 +1392,7 @@ function renderShop() {
                 document.getElementById('gold-display').innerText = 'Золото: ' + Game.gold;
                 logMsg('Куплено: ' + item.title, '#ffd700');
                 d.remove();
+                renderPlayerStatsPanel();
                 renderShop();
             };
         }
@@ -1353,6 +1414,80 @@ function removeWeakCard(cardId) {
     }
 }
 
+// --- CHARACTER SWITCH (Career) ---
+function openCharSwitch() {
+    nav('char-switch');
+    renderCharSwitchRoster();
+}
+
+function backToRewards() {
+    nav('rewards');
+    renderPlayerStatsPanel();
+}
+
+function renderCharSwitchRoster() {
+    const cont = document.getElementById('switch-roster-container');
+    cont.innerHTML = '';
+    document.getElementById('switch-gold-display').innerText = '💰 Кошелёк: ' + (Stats.gold || 0) + ' | В забеге: ' + Game.gold;
+
+    Characters.forEach(c => {
+        let card = document.createElement('div');
+        let isUnlocked = Stats.unlockedChars.includes(c.id);
+        let isCurrent = Game.player && Game.player.id === c.id;
+        card.className = 'char-card' + (isUnlocked ? '' : ' locked') + (isCurrent ? ' selected arcade-char' : '');
+
+        if(isCurrent) {
+            card.innerHTML = `
+                <div class="char-name" style="color:#0f0">${c.name} (текущий)</div>
+                <div class="char-svg">${renderAvatar(c.svg)}</div>
+                <div class="char-info">HP: ${c.hp}<br>ATK: ${c.atk} 🛡️: ${c.def}<br><br><span style="color:#0f0">${c.passiveDesc}</span></div>
+            `;
+        } else if(isUnlocked) {
+            card.innerHTML = `
+                <div class="char-name">${c.name}</div>
+                <div class="char-svg">${renderAvatar(c.svg)}</div>
+                <div class="char-info">HP: ${c.hp}<br>ATK: ${c.atk} 🛡️: ${c.def}<br><br><span style="color:#0f0">${c.passiveDesc}</span></div>
+            `;
+            card.onclick = () => switchCharacter(c.id);
+        } else {
+            let req = UNLOCK_CONDITIONS[c.id];
+            let canAfford = (Stats.gold || 0) >= req.cost;
+            card.innerHTML = `
+                <div class="char-name" style="color:#666">???</div>
+                <div class="char-svg" style="filter:grayscale(100%);opacity:0.3">${renderAvatar(c.svg)}</div>
+                <div class="char-info" style="color:#888;font-size:9px">${req.desc}<br><br>Цена: <span style="color:${canAfford ? '#ffd700' : '#f44'}">${req.cost}💰</span></div>
+            `;
+            card.onclick = () => { unlockChar(c.id); renderCharSwitchRoster(); };
+        }
+        cont.appendChild(card);
+    });
+}
+
+function switchCharacter(charId) {
+    if(!Stats.unlockedChars.includes(charId)) return;
+    if(Game.player && Game.player.id === charId) return;
+    let charBase = Characters.find(c => c.id === charId);
+    if(!charBase) return;
+
+    if(!confirm(`Сменить бойца на ${charBase.name}?\nКолода будет пересоздана. Улучшения (золото, бонусы) сохранятся.`)) return;
+
+    // Сохраняем улучшения (dmgBonus, energyBonus, gold, level, maxLevel, difficulty, endlessMode)
+    let prevMaxHpBonus = Math.max(0, (Game.player.maxHp || 0) - (Characters.find(c=>c.id===Game.player.id)?.hp || 0));
+
+    Game.player = JSON.parse(JSON.stringify(charBase));
+    Game.player.maxHp = Game.player.hp + prevMaxHpBonus;
+    Game.player.hp = Game.player.maxHp; // Полное восстановление HP при смене
+    Game.pEx = 0;
+    Game.pDeck = generateStartingDeck(charId);
+    Game.pHand = [];
+    Game.pDiscard = [];
+    Game.pExhaust = [];
+    resetBuffs(Game.pBuffs);
+
+    logMsg(`🔄 Боец сменён на ${Game.player.name}!`, '#ffbb00');
+    backToRewards();
+}
+
 function duplicateRandomCard() {
     if (Game.pDeck.length > 0) {
         let src = Game.pDeck[Math.floor(Math.random() * Game.pDeck.length)];
@@ -1362,10 +1497,29 @@ function duplicateRandomCard() {
 }
 
 // --- UI UPDATE ---
+function renderFighterStats(elId, fighter, isPlayer) {
+    let el = document.getElementById(elId);
+    if(!el) return;
+    let atk = (fighter.atk || 0) + (isPlayer ? (Game.dmgBonus || 0) : 0);
+    let def = fighter.def || 0;
+    let energy = Game.baseEnergy + (isPlayer ? (Game.energyBonus || 0) : 0);
+    if(isPlayer && fighter.id === 'ryu') energy += 1;
+    if(!isPlayer && fighter.id === 'ryu') energy += 1;
+    let parts = [];
+    parts.push(`<span class="stat-chip atk">⚔️${atk}</span>`);
+    parts.push(`<span class="stat-chip def">🛡️${def}</span>`);
+    parts.push(`<span class="stat-chip eng">⚡${energy}</span>`);
+    if(fighter.passiveDesc) {
+        parts.push(`<span class="stat-chip passive" title="${fighter.passiveDesc}">${fighter.passiveDesc}</span>`);
+    }
+    el.innerHTML = parts.join('');
+}
+
 function updateUI() {
     // Top Info
     document.getElementById('p1-avatar').innerHTML = renderAvatar(Game.player.svg);
     document.getElementById('p1-name').innerText = Game.player.name;
+    renderFighterStats('p1-stats', Game.player, true);
     let p1HpPct = (Game.player.hp / Game.player.maxHp) * 100;
     let p1HpFill = document.getElementById('p1-hp-fill');
     p1HpFill.style.width = Math.max(0, p1HpPct) + '%';
@@ -1375,6 +1529,7 @@ function updateUI() {
     
     document.getElementById('p2-avatar').innerHTML = renderAvatar(Game.enemy.svg);
     document.getElementById('p2-name').innerText = Game.enemy.name;
+    renderFighterStats('p2-stats', Game.enemy, false);
     let p2HpPct = (Game.enemy.hp / Game.enemy.maxHp) * 100;
     let p2HpFill = document.getElementById('p2-hp-fill');
     p2HpFill.style.width = Math.max(0, p2HpPct) + '%';

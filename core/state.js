@@ -2,7 +2,8 @@ const DEFAULT_STATS = {
     wins: 0, losses: 0, favChar: '', bestRun: 0,
     achZangief3: false, achNoBlock: false, achAllChars: [],
     unlockedChars: ['ryu'],
-    recordEndless: 0
+    recordEndless: 0,
+    gold: 0
 };
 
 function loadJson(key, fallback) {
@@ -23,6 +24,7 @@ function loadJson(key, fallback) {
 
 let Stats = loadJson('sfStats', DEFAULT_STATS);
 if(!Stats.unlockedChars) Stats.unlockedChars = ['ryu'];
+if(typeof Stats.gold !== 'number') Stats.gold = 0;
 
 function saveStats() {
     try {
@@ -47,15 +49,17 @@ function unlockChar(charId) {
     let req = UNLOCK_CONDITIONS[charId];
     if(!req) return;
     if(Stats.unlockedChars.includes(charId)) return;
-    if(Game.gold >= req.cost) {
-        Game.gold -= req.cost;
+    if((Stats.gold || 0) >= req.cost) {
+        Stats.gold -= req.cost;
         Stats.unlockedChars.push(charId);
         saveStats();
-        logMsg(`${Characters.find(c=>c.id===charId).name} разблокирован!`, '#ffd700');
-        Audio.win();
-        renderRoster();
+        if(typeof logMsg === 'function') logMsg(`${Characters.find(c=>c.id===charId).name} разблокирован!`, '#ffd700');
+        if(typeof Audio !== 'undefined' && Audio.win) Audio.win();
+        if(typeof renderRoster === 'function') renderRoster();
     } else {
-        logMsg(`Нужно ${req.cost} золота для разблокировки!`, '#888');
+        if(typeof alert === 'function') {
+            alert(`Нужно ${req.cost} золота для разблокировки!\nУ вас: ${Stats.gold || 0}`);
+        }
     }
 }
 

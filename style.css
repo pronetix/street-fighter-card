@@ -87,6 +87,12 @@
     .fighter { display: flex; flex-direction: column; align-items: center; width: 40%; }
     .fighter-avatar { width: 120px; height: 120px; border: 4px solid #fff; background: var(--panel); position: relative; transition: transform 0.1s; }
     .fighter-name { margin-top: 10px; font-size: 16px; text-shadow: 2px 2px #000; }
+    .fighter-stats { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; justify-content: center; font-size: 9px; color: #ffbb00; }
+    .fighter-stats .stat-chip { background: rgba(0,0,0,0.55); border: 1px solid #555; padding: 2px 5px; border-radius: 3px; white-space: nowrap; }
+    .fighter-stats .stat-chip.atk { color: #ff6644; border-color: #883322; }
+    .fighter-stats .stat-chip.def { color: #66aaff; border-color: #224488; }
+    .fighter-stats .stat-chip.eng { color: #66ddff; border-color: #226688; }
+    .fighter-stats .stat-chip.passive { color: #88ff88; border-color: #228822; font-size: 8px; max-width: 220px; white-space: normal; line-height: 1.2; }
     
     .hp-bar { width: 100%; height: 20px; background: var(--hp-bg); border: 2px solid #fff; margin-top: 5px; position: relative; }
     .hp-fill { height: 100%; background: var(--hp-fill); width: 100%; transition: width 0.3s ease-out; }
@@ -159,6 +165,33 @@
     .reward-card-desc { font-size: 12px; color: #ccc; }
     .reward-header { text-align: center; margin-bottom: 20px; }
     .reward-header img { width: 150px; height: 150px; border-radius: 8px; margin-bottom: 10px; }
+
+    /* Player Stats Panel (Rewards/Shop) */
+    .player-stats-panel {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        background: rgba(0,0,0,0.5);
+        border: 3px solid #555;
+        border-radius: 6px;
+        padding: 10px 15px;
+        margin-bottom: 15px;
+        max-width: 700px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .player-stats-panel .psp-avatar { width: 70px; height: 70px; border: 3px solid #ffbb00; flex-shrink: 0; }
+    .player-stats-panel .psp-avatar img { width: 100%; height: 100%; object-fit: cover; image-rendering: auto; }
+    .player-stats-panel .psp-info { display: flex; flex-direction: column; gap: 4px; font-size: 11px; }
+    .player-stats-panel .psp-name { color: #ffbb00; font-size: 13px; }
+    .player-stats-panel .psp-stats { display: flex; gap: 8px; flex-wrap: wrap; font-size: 10px; }
+    .player-stats-panel .psp-stats span { background: rgba(0,0,0,0.6); border: 1px solid #555; padding: 3px 6px; border-radius: 3px; }
+    .player-stats-panel .psp-stats .s-hp { color: #00ff66; border-color: #228822; }
+    .player-stats-panel .psp-stats .s-atk { color: #ff6644; border-color: #883322; }
+    .player-stats-panel .psp-stats .s-def { color: #66aaff; border-color: #224488; }
+    .player-stats-panel .psp-stats .s-eng { color: #66ddff; border-color: #226688; }
+    .player-stats-panel .psp-stats .s-deck { color: #ffd700; border-color: #886622; }
+    .player-stats-panel .psp-passive { color: #88ff88; font-size: 9px; max-width: 280px; line-height: 1.4; }
 
     /* SHOP */
     .gold-display { font-size: 18px; color: #ffd700; text-shadow: 1px 1px #000; margin-bottom: 15px; }
@@ -265,6 +298,18 @@
         #screen-battle .hp-text {
             font-size: 8px;
             top: 1px;
+        }
+        #screen-battle .fighter-stats {
+            font-size: 7px;
+            gap: 3px;
+            margin-top: 2px;
+        }
+        #screen-battle .fighter-stats .stat-chip {
+            padding: 1px 3px;
+        }
+        #screen-battle .fighter-stats .stat-chip.passive {
+            font-size: 7px;
+            max-width: 100%;
         }
         #screen-battle .status-effects {
             height: 10px;
@@ -405,6 +450,12 @@
 
         /* Stats & Rewards */
         .stat-box { width: 100%; padding: 12px; font-size: 11px; border-width: 3px; }
+        .player-stats-panel { padding: 6px 10px; gap: 8px; border-width: 2px; margin-bottom: 10px; }
+        .player-stats-panel .psp-avatar { width: 50px; height: 50px; border-width: 2px; }
+        .player-stats-panel .psp-name { font-size: 11px; }
+        .player-stats-panel .psp-stats { font-size: 8px; gap: 4px; }
+        .player-stats-panel .psp-stats span { padding: 2px 4px; }
+        .player-stats-panel .psp-passive { font-size: 8px; max-width: 200px; }
         .reward-cards { max-width: 100%; gap: 10px; }
         .reward-card { width: 130px; padding: 10px; border-width: 3px; }
         .reward-card-img { width: 60px; height: 60px; }

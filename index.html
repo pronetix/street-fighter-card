@@ -96,6 +96,7 @@
         <div class="fighter" id="p1">
             <div class="fighter-avatar" id="p1-avatar"></div>
             <div class="fighter-name" id="p1-name">Игрок</div>
+            <div class="fighter-stats" id="p1-stats"></div>
             <div class="hp-bar"><div class="hp-fill" id="p1-hp-fill"></div><div class="hp-text" id="p1-hp-text">100/100</div></div>
             <div class="status-effects" id="p1-status"></div>
             <div class="deck-count" id="p1-deck">Колода: 20</div>
@@ -110,6 +111,7 @@
         <div class="fighter" id="p2">
             <div class="fighter-avatar" id="p2-avatar"></div>
             <div class="fighter-name" id="p2-name">Враг</div>
+            <div class="fighter-stats" id="p2-stats"></div>
             <div class="hp-bar"><div class="hp-fill" id="p2-hp-fill"></div><div class="hp-text" id="p2-hp-text">100/100</div></div>
             <div class="status-effects" id="p2-status"></div>
             <div class="deck-count" id="p2-deck">Колода: 20</div>
@@ -143,16 +145,28 @@
 <!-- REWARDS SCREEN -->
 <div id="screen-rewards" class="screen">
     <div class="reward-header">
-        <img src="images/banner_35.jpeg" style="width:150px;height:150px;border-radius:8px;margin-bottom:10px;" alt="">
         <h2 style="color:#ffd700; text-shadow: 2px 2px #000;">ПОБЕДА!</h2>
         <p id="reward-subtitle">Выберите награду:</p>
         <div class="gold-display" id="gold-display">Золото: 0</div>
     </div>
+    <div id="player-stats-panel" class="player-stats-panel"></div>
     <div class="reward-cards" id="reward-container"></div>
     <div class="shop-container" id="shop-container"></div>
     <div class="shop-btn-row">
         <button id="skip-reward-btn" onclick="skipReward()">Пропустить награду (+5 золота)</button>
+        <button id="switch-char-btn" onclick="openCharSwitch()" style="display:none;">🔄 Сменить бойца</button>
         <button id="next-battle-btn" onclick="prepareNextBattle()">Следующий бой →</button>
+    </div>
+</div>
+
+<!-- CHARACTER SWITCH SCREEN (Career) -->
+<div id="screen-char-switch" class="screen">
+    <h2 style="color:#ffbb00;">🔄 СМЕНА БОЙЦА</h2>
+    <p style="font-size:11px; color:#888; margin-bottom:10px; text-align:center;">Выберите нового бойца. Колода и улучшения сохранятся, HP восстановится.</p>
+    <div class="gold-display" id="switch-gold-display">Золото: 0</div>
+    <div class="roster roster-scroll" id="switch-roster-container"></div>
+    <div class="btn-row">
+        <button onclick="backToRewards()">Назад</button>
     </div>
 </div>
 
